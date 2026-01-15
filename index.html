@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weekly Meal Planner</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', sans-serif;
+            background: #f5f5f7;
+            min-height: 100vh;
+            padding: 20px;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 18px;
+            box-shadow: 0 2px 16px rgba(0, 0, 0, 0.08);
+            padding: 48px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #1d1d1f;
+            margin-bottom: 8px;
+            font-size: 3em;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #86868b;
+            margin-bottom: 40px;
+            font-size: 1.1em;
+            font-weight: 400;
+        }
+
+        .goal-info {
+            background: #f5f5f7;
+            padding: 20px 24px;
+            margin-bottom: 32px;
+            border-radius: 12px;
+        }
+
+        .goal-info h3 {
+            color: #1d1d1f;
+            margin-bottom: 12px;
+            font-size: 1.3em;
+            font-weight: 600;
+        }
+
+        .goal-info p {
+            color: #515154;
+            line-height: 1.6;
+            font-size: 0.95em;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 32px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            background: #007aff;
+            color: white;
+            border: none;
+            padding: 11px 22px;
+            border-radius: 10px;
+            font-size: 0.95em;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            font-weight: 500;
+            font-family: inherit;
+        }
+
+        button:hover {
+            background: #0051d5;
+            transform: scale(1.02);
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        .daily-totals {
+            background: #f5f5f7;
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 32px;
+        }
+
+        .daily-totals h3 {
+            color: #1d1d1f;
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 1.3em;
+            font-weight: 600;
+        }
+
+        .macro-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 12px;
+        }
+
+        .macro-card {
+            background: white;
+            padding: 18px;
+            border-radius: 12px;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+            text-align: center;
+        }
+
+        .macro-card h4 {
+            color: #86868b;
+            font-size: 0.85em;
+            margin-bottom: 8px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .macro-card .value {
+            font-size: 2em;
+            font-weight: 600;
+            color: #1d1d1f;
+            letter-spacing: -0.02em;
+        }
+
+        .macro-card .unit {
+            font-size: 0.85em;
+            color: #86868b;
+            margin-top: 4px;
+        }
+
+        .week-plan {
+            display: grid;
+            gap: 16px;
+        }
+
+        .day-card {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            border: 1px solid #e5e5e7;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .day-card:hover {
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+            border-color: #d2d2d7;
+        }
+
+        .day-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #e5e5e7;
+        }
+
+        .day-name {
+            font-size: 1.5em;
+            font-weight: 600;
+            color: #1d1d1f;
+            letter-spacing: -0.01em;
+        }
+
+        .day-calories {
+            background: #007aff;
+            color: white;
+            padding: 6px 14px;
+            border-radius: 8px;
+            font-weight: 500;
+            font-size: 0.9em;
+        }
+
+        .meals {
+            display: grid;
+            gap: 12px;
+        }
+
+        .meal {
+            background: #f5f5f7;
+            padding: 16px;
+            border-radius: 12px;
+            border-left: 3px solid transparent;
+        }
+
+        .meal.breakfast {
+            border-left-color: #ff9500;
+        }
+
+        .meal.lunch {
+            border-left-color: #ff3b30;
+        }
+
+        .meal.dinner {
+            border-left-color: #30b0c7;
+        }
+
+        .meal-type {
+            font-weight: 600;
+            color: #86868b;
+            margin-bottom: 6px;
+            font-size: 0.8em;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+
+        .meal-name {
+            color: #1d1d1f;
+            font-size: 1.05em;
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+
+        .meal-macros {
+            display: flex;
+            gap: 12px;
+            font-size: 0.85em;
+            color: #515154;
+            flex-wrap: wrap;
+        }
+
+        .meal-macros span {
+            background: white;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-weight: 500;
+        }
+
+        .protein { color: #ff3b30; }
+        .carbs { color: #ff9500; }
+        .fat { color: #007aff; }
+        .calories { color: #1d1d1f; font-weight: 600; }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 24px;
+            }
+
+            h1 {
+                font-size: 2em;
+            }
+
+            .day-header {
+                flex-direction: column;
+                gap: 12px;
+                align-items: flex-start;
+            }
+        }
+
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 24px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9em;
+            color: #515154;
+        }
+
+        .legend-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 3px;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🍽️ Weekly Meal Planner</h1>
+        <p class="subtitle">Personalized meal plan for weight loss & muscle gain</p>
+
+        <div class="goal-info">
+            <h3>🎯 Your Goals</h3>
+            <p><strong>Daily Target:</strong> ~1600 calories | <strong>Protein:</strong> 120-140g | <strong>Carbs:</strong> 150-180g | <strong>Fat:</strong> 45-55g</p>
+            <p><strong>Focus:</strong> High protein for muscle gain, moderate carbs for energy, controlled calories for fat loss</p>
+        </div>
+
+        <div class="controls">
+            <button onclick="generateWeekPlan()">🎲 Generate New Week</button>
+            <button onclick="copyToClipboard()">📋 Copy as Text</button>
+            <button onclick="window.print()">🖨️ Print Plan</button>
+        </div>
+
+        <div id="copyNotification" style="display: none; position: fixed; top: 20px; right: 20px; background: #34c759; color: white; padding: 14px 24px; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.12); z-index: 1000; animation: slideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1); font-weight: 500; font-size: 0.95em;">
+            ✓ Copied to clipboard!
+        </div>
+
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color" style="background: #ff9500;"></div>
+                <span>Breakfast</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #ff3b30;"></div>
+                <span>Lunch</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #30b0c7;"></div>
+                <span>Dinner</span>
+            </div>
+        </div>
+
+        <div class="daily-totals" id="weeklyTotals">
+            <h3>📊 Weekly Averages</h3>
+            <div class="macro-grid">
+                <div class="macro-card">
+                    <h4>Calories</h4>
+                    <div class="value calories" id="avgCalories">0</div>
+                    <div class="unit">kcal/day</div>
+                </div>
+                <div class="macro-card">
+                    <h4>Protein</h4>
+                    <div class="value protein" id="avgProtein">0</div>
+                    <div class="unit">g/day</div>
+                </div>
+                <div class="macro-card">
+                    <h4>Carbs</h4>
+                    <div class="value carbs" id="avgCarbs">0</div>
+                    <div class="unit">g/day</div>
+                </div>
+                <div class="macro-card">
+                    <h4>Fat</h4>
+                    <div class="value fat" id="avgFat">0</div>
+                    <div class="unit">g/day</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="week-plan" id="weekPlan"></div>
+    </div>
+
+    <script>
+        // Meal database with nutritional information
+        const mealDatabase = {
+            breakfast: [
+                { name: "Coffee + Eggs bread", cal: 350, protein: 25, carbs: 35, fat: 12 },
+                { name: "Yogurt Granola", cal: 320, protein: 15, carbs: 48, fat: 8 },
+                { name: "Poha & Chai", cal: 280, protein: 8, carbs: 52, fat: 6 },
+                { name: "Suji Upma", cal: 300, protein: 10, carbs: 50, fat: 7 },
+                { name: "Besan Chilla", cal: 260, protein: 14, carbs: 35, fat: 8 },
+                { name: "Egg Whites + Toast", cal: 250, protein: 22, carbs: 30, fat: 5 },
+                { name: "Greek Yogurt + Berries", cal: 220, protein: 20, carbs: 25, fat: 6 },
+                { name: "Pesto Eggs and Toast", cal: 380, protein: 24, carbs: 28, fat: 18 },
+                { name: "Omelette Toast", cal: 340, protein: 26, carbs: 30, fat: 14 },
+                { name: "Bagel + Cookie", cal: 420, protein: 10, carbs: 68, fat: 12 },
+                { name: "Overnight Oats", cal: 300, protein: 12, carbs: 48, fat: 8 },
+                { name: "Protein Smoothie", cal: 280, protein: 28, carbs: 32, fat: 6 },
+                { name: "Avocado Toast", cal: 340, protein: 12, carbs: 38, fat: 16 },
+                { name: "Scrambled Eggs + Garlic Bread", cal: 380, protein: 24, carbs: 35, fat: 16 },
+                { name: "Chutney Sandwich", cal: 290, protein: 9, carbs: 48, fat: 8 },
+                { name: "PBJ Sandwich", cal: 380, protein: 14, carbs: 58, fat: 12 },
+                { name: "Green Moong Dosa", cal: 240, protein: 12, carbs: 38, fat: 5 },
+                { name: "Stuffed Paratha", cal: 380, protein: 12, carbs: 52, fat: 14 },
+                { name: "Croissant + Coffee", cal: 350, protein: 7, carbs: 42, fat: 16 },
+                { name: "Upma & Yogurt", cal: 320, protein: 12, carbs: 50, fat: 8 }
+            ],
+            heavyMeal: [
+                // Indian meals
+                { name: "Rajma Rice", cal: 480, protein: 18, carbs: 78, fat: 10 },
+                { name: "Dal Palak & Rice", cal: 420, protein: 16, carbs: 68, fat: 8 },
+                { name: "Chicken Thai Curry + Rice", cal: 520, protein: 35, carbs: 55, fat: 16 },
+                { name: "Paneer Tikka Bowl", cal: 450, protein: 28, carbs: 38, fat: 20 },
+                { name: "Chole Rajma Salad", cal: 380, protein: 20, carbs: 52, fat: 10 },
+                { name: "Chicken Fajita Bowl", cal: 480, protein: 38, carbs: 42, fat: 14 },
+                { name: "Quinoa Pulao", cal: 400, protein: 14, carbs: 62, fat: 10 },
+                { name: "Besan Chilla", cal: 320, protein: 16, carbs: 42, fat: 10 },
+                { name: "Tofu Stir Fry + Garlic Chips", cal: 380, protein: 22, carbs: 38, fat: 16 },
+                { name: "Aloo Mattar + Roti + Raita", cal: 420, protein: 14, carbs: 68, fat: 10 },
+                { name: "Paneer Masala + Roti", cal: 480, protein: 26, carbs: 48, fat: 20 },
+                { name: "Moong Dal Rice + Beet Salad", cal: 400, protein: 16, carbs: 68, fat: 6 },
+                { name: "Bhindi Roti", cal: 380, protein: 12, carbs: 62, fat: 10 },
+                { name: "Tandoori Chicken + Chutney", cal: 380, protein: 42, carbs: 18, fat: 14 },
+
+                // Protein-rich meals
+                { name: "Grilled Chicken Breast + Sweet Potato", cal: 420, protein: 45, carbs: 38, fat: 8 },
+                { name: "Salmon + Quinoa + Veggies", cal: 480, protein: 38, carbs: 42, fat: 16 },
+                { name: "Turkey Chili", cal: 380, protein: 35, carbs: 38, fat: 10 },
+                { name: "Chicken Wraps", cal: 450, protein: 36, carbs: 42, fat: 14 },
+                { name: "Protein Chana Chaat", cal: 340, protein: 24, carbs: 48, fat: 6 },
+                { name: "Egg Fried Rice + Edamame", cal: 460, protein: 22, carbs: 62, fat: 12 },
+
+                // Pasta & International
+                { name: "Chicken Pesto Pasta", cal: 520, protein: 32, carbs: 58, fat: 18 },
+                { name: "Pasta Primavera", cal: 420, protein: 16, carbs: 68, fat: 10 },
+                { name: "Spaghetti + Garlic Bread", cal: 480, protein: 18, carbs: 76, fat: 12 },
+                { name: "Fusili Creamy Pasta", cal: 500, protein: 20, carbs: 64, fat: 18 },
+
+                // Sandwiches & Bowls
+                { name: "Chickpea Salad Sandwich", cal: 380, protein: 18, carbs: 52, fat: 12 },
+                { name: "Chicken Tandoori Sandwich", cal: 420, protein: 32, carbs: 38, fat: 14 },
+                { name: "Halloumi Sandwich", cal: 450, protein: 22, carbs: 42, fat: 20 },
+                { name: "Buddha Bowl (Quinoa + Tofu)", cal: 420, protein: 20, carbs: 56, fat: 14 },
+
+                // Lighter options
+                { name: "Shakshuka", cal: 320, protein: 18, carbs: 28, fat: 16 },
+                { name: "Hyd Egg Malai Curry + Roti", cal: 420, protein: 22, carbs: 42, fat: 18 },
+                { name: "Lemon Pepper Chicken + Salad", cal: 380, protein: 42, carbs: 18, fat: 14 },
+                { name: "Veggie Stir Fry + Brown Rice", cal: 380, protein: 12, carbs: 68, fat: 8 },
+                { name: "Aloo Tikki Chaat", cal: 360, protein: 10, carbs: 58, fat: 10 },
+                { name: "Pav Bhaji", cal: 420, protein: 12, carbs: 68, fat: 12 },
+
+                // Additional variety
+                { name: "Chicken Schezwan Fried Rice", cal: 480, protein: 32, carbs: 58, fat: 12 },
+                { name: "Paneer Bhurji + Roti", cal: 440, protein: 24, carbs: 42, fat: 18 },
+                { name: "Pulao + Raita", cal: 400, protein: 12, carbs: 72, fat: 8 },
+                { name: "Spicy Egg Wraps", cal: 420, protein: 28, carbs: 42, fat: 14 },
+                { name: "Chilli Oil Peanut Noodles + Tofu", cal: 480, protein: 20, carbs: 62, fat: 16 },
+                { name: "Fish Tacos (2)", cal: 420, protein: 32, carbs: 38, fat: 14 },
+                { name: "Chicken Burrito Bowl", cal: 480, protein: 36, carbs: 52, fat: 14 },
+                { name: "Vegetable Curry + Rice", cal: 400, protein: 12, carbs: 72, fat: 8 }
+            ]
+        };
+
+        const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+
+        // Store current week plan and used meals to prevent repeats
+        let currentWeekPlan = [];
+        let usedMeals = {
+            breakfast: new Set(),
+            heavyMeal: new Set()
+        };
+
+        function getRandomMeal(mealType, excludeSet = new Set()) {
+            const meals = mealDatabase[mealType];
+            const availableMeals = meals.filter(meal => !excludeSet.has(meal.name));
+
+            // If we've used most meals, reset the exclude set
+            if (availableMeals.length < 3) {
+                excludeSet.clear();
+                return meals[Math.floor(Math.random() * meals.length)];
+            }
+
+            return availableMeals[Math.floor(Math.random() * availableMeals.length)];
+        }
+
+        function generateDayPlan(usedInThisWeek = { breakfast: new Set(), heavyMeal: new Set() }) {
+            const breakfast = getRandomMeal('breakfast', usedInThisWeek.breakfast);
+            usedInThisWeek.breakfast.add(breakfast.name);
+
+            const lunch = getRandomMeal('heavyMeal', usedInThisWeek.heavyMeal);
+            usedInThisWeek.heavyMeal.add(lunch.name);
+
+            // Ensure dinner is different from lunch
+            let dinnerMeal = getRandomMeal('heavyMeal', usedInThisWeek.heavyMeal);
+            let attempts = 0;
+            while (dinnerMeal.name === lunch.name && attempts < 10) {
+                dinnerMeal = getRandomMeal('heavyMeal', usedInThisWeek.heavyMeal);
+                attempts++;
+            }
+            usedInThisWeek.heavyMeal.add(dinnerMeal.name);
+
+            const totalCal = breakfast.cal + lunch.cal + dinnerMeal.cal;
+            const totalProtein = breakfast.protein + lunch.protein + dinnerMeal.protein;
+            const totalCarbs = breakfast.carbs + lunch.carbs + dinnerMeal.carbs;
+            const totalFat = breakfast.fat + lunch.fat + dinnerMeal.fat;
+
+            return {
+                breakfast,
+                lunch,
+                dinner: dinnerMeal,
+                totals: {
+                    cal: totalCal,
+                    protein: totalProtein,
+                    carbs: totalCarbs,
+                    fat: totalFat
+                }
+            };
+        }
+
+        function generateWeekPlan() {
+            currentWeekPlan = [];
+            let totalWeekCal = 0, totalWeekProtein = 0, totalWeekCarbs = 0, totalWeekFat = 0;
+
+            // Track meals used in THIS week to avoid repeats within the week
+            const usedInThisWeek = {
+                breakfast: new Set(),
+                heavyMeal: new Set()
+            };
+
+            daysOfWeek.forEach(day => {
+                const dayPlan = generateDayPlan(usedInThisWeek);
+                currentWeekPlan.push({ day, ...dayPlan });
+
+                totalWeekCal += dayPlan.totals.cal;
+                totalWeekProtein += dayPlan.totals.protein;
+                totalWeekCarbs += dayPlan.totals.carbs;
+                totalWeekFat += dayPlan.totals.fat;
+            });
+
+            // Update global used meals for next week
+            usedMeals.breakfast = usedInThisWeek.breakfast;
+            usedMeals.heavyMeal = usedInThisWeek.heavyMeal;
+
+            displayWeekPlan(currentWeekPlan);
+            displayWeeklyAverages(totalWeekCal, totalWeekProtein, totalWeekCarbs, totalWeekFat);
+        }
+
+        function displayWeeklyAverages(totalCal, totalProtein, totalCarbs, totalFat) {
+            document.getElementById('avgCalories').textContent = Math.round(totalCal / 7);
+            document.getElementById('avgProtein').textContent = Math.round(totalProtein / 7);
+            document.getElementById('avgCarbs').textContent = Math.round(totalCarbs / 7);
+            document.getElementById('avgFat').textContent = Math.round(totalFat / 7);
+        }
+
+        function displayWeekPlan(weekPlan) {
+            const container = document.getElementById('weekPlan');
+            container.innerHTML = '';
+
+            weekPlan.forEach(({ day, breakfast, lunch, dinner, totals }) => {
+                const dayCard = document.createElement('div');
+                dayCard.className = 'day-card';
+
+                const calorieStatus = totals.cal <= 1700 ? '✅' : totals.cal <= 1800 ? '⚠️' : '🔴';
+
+                dayCard.innerHTML = `
+                    <div class="day-header">
+                        <div class="day-name">${day}</div>
+                        <div class="day-calories">${calorieStatus} ${totals.cal} kcal</div>
+                    </div>
+                    <div class="meals">
+                        <div class="meal breakfast">
+                            <div class="meal-type">🌅 Breakfast</div>
+                            <div class="meal-name">${breakfast.name}</div>
+                            <div class="meal-macros">
+                                <span class="calories">${breakfast.cal} kcal</span>
+                                <span class="protein">P: ${breakfast.protein}g</span>
+                                <span class="carbs">C: ${breakfast.carbs}g</span>
+                                <span class="fat">F: ${breakfast.fat}g</span>
+                            </div>
+                        </div>
+                        <div class="meal lunch">
+                            <div class="meal-type">☀️ Lunch</div>
+                            <div class="meal-name">${lunch.name}</div>
+                            <div class="meal-macros">
+                                <span class="calories">${lunch.cal} kcal</span>
+                                <span class="protein">P: ${lunch.protein}g</span>
+                                <span class="carbs">C: ${lunch.carbs}g</span>
+                                <span class="fat">F: ${lunch.fat}g</span>
+                            </div>
+                        </div>
+                        <div class="meal dinner">
+                            <div class="meal-type">🌙 Dinner</div>
+                            <div class="meal-name">${dinner.name}</div>
+                            <div class="meal-macros">
+                                <span class="calories">${dinner.cal} kcal</span>
+                                <span class="protein">P: ${dinner.protein}g</span>
+                                <span class="carbs">C: ${dinner.carbs}g</span>
+                                <span class="fat">F: ${dinner.fat}g</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="margin-top: 15px; padding-top: 15px; border-top: 2px solid #ddd; font-weight: 600; color: #667eea;">
+                        Daily Totals: P: ${totals.protein}g | C: ${totals.carbs}g | F: ${totals.fat}g
+                    </div>
+                `;
+
+                container.appendChild(dayCard);
+            });
+        }
+
+        function copyToClipboard() {
+            if (currentWeekPlan.length === 0) {
+                alert('Please generate a meal plan first!');
+                return;
+            }
+
+            // Format in the style of the original meal plan
+            let text = 'B - Breakfast(9AM - 10AM) , L - Lunch(1PM - 2PM) & D - Dinner(7PM-8PM)\n\n';
+
+            currentWeekPlan.forEach(({ day, breakfast, lunch, dinner }) => {
+                text += `${day}:\n\n`;
+                text += `- B: ${breakfast.name}\n`;
+                text += `- L: ${lunch.name}\n`;
+                text += `- D: ${dinner.name}\n\n`;
+            });
+
+            // Copy to clipboard
+            navigator.clipboard.writeText(text).then(() => {
+                // Show notification
+                const notification = document.getElementById('copyNotification');
+                notification.style.display = 'block';
+
+                // Hide after 2 seconds
+                setTimeout(() => {
+                    notification.style.display = 'none';
+                }, 2000);
+            }).catch(err => {
+                alert('Failed to copy to clipboard. Please try again.');
+                console.error('Copy failed:', err);
+            });
+        }
+
+        // Generate initial plan on load
+        window.onload = generateWeekPlan;
+    </script>
+</body>
+</html>
