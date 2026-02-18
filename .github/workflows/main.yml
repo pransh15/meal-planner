@@ -1,0 +1,26 @@
+name: Fetch RSS
+
+on:
+  schedule:
+    - cron: "0 0 * * *"
+  workflow_dispatch:
+
+jobs:
+  fetch-rss:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.RSS_PAT }}
+
+      - uses: pransh15/rss-action@main
+        with:
+          github_token: ${{ secrets.RSS_PAT }}
+          rss_urls: |
+            https://developer.mozilla.org/en-US/blog/rss.xml
+          max_links: 10
+          output_file: README.md
+          base_branch: main
